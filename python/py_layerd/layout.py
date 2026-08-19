@@ -3,7 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TypedDict
 
-from py_layerd._core import EdgeSpec, LayoutResult, NodeSpec, layout_flat_py
+from py_layerd._core import (
+    EdgeSpec,
+    LayoutResult,
+    NodeSpec,
+    PyLayoutOptions,
+    layout_flat_py,
+    layout_with_options_py,
+)
 
 
 class NodeInput(TypedDict, total=False):
@@ -46,12 +53,22 @@ def layout(
     edges: list[dict],
     *,
     offset: tuple[float, float] = (0.0, 0.0),
+    direction: str = "RIGHT",
+    layering: str = "network_simplex",
+    node_placement: str = "brandes_koepf",
+    edge_routing: str = "orthogonal",
+    cycle_breaking: str = "greedy",
+    spacing_node_node: float = 20.0,
+    spacing_node_between_layers: float = 20.0,
+    padding: float = 12.0,
+    thoroughness: int = 7,
+    random_seed: int = 1,
+    options: PyLayoutOptions | None = None,
 ) -> dict:
     """High-level layout: dict nodes/edges -> positioned nodes/edges with offset."""
     if not nodes:
         return {"nodes": [], "edges": [], "width": 0.0, "height": 0.0}
 
-    # Stable u32 mapping for Rust wire format
     id_to_u32: dict[str | int, int] = {}
     u32_to_str: dict[int, str] = {}
     for idx, n in enumerate(nodes):
@@ -80,7 +97,35 @@ def layout(
         t = id_to_u32[e["target"]]
         edge_specs.append(EdgeSpec(u, s, t))
 
-    result: LayoutResult = layout_flat_py(specs, edge_specs)
+    if options is not None:
+        result: LayoutResult = layout_with_options_py(specs, edge_specs, options)
+    elif (
+        direction != "RIGHT"
+        or layering != "network_simplex"
+        or node_placement != "brandes_koepf"
+        or edge_routing != "orthogonal"
+        or cycle_breaking != "greedy"
+        or spacing_node_node != 20.0
+        or spacing_node_between_layers != 20.0
+        or padding != 12.0
+        or thoroughness != 7
+        or random_seed != 1
+    ):
+        opts = PyLayoutOptions(
+            direction=direction,
+            layering=layering,
+            node_placement=node_placement,
+            edge_routing=edge_routing,
+            cycle_breaking=cycle_breaking,
+            node_node=spacing_node_node,
+            node_node_between_layers=spacing_node_between_layers,
+            padding=padding,
+            thoroughness=thoroughness,
+            random_seed=random_seed,
+        )
+        result = layout_with_options_py(specs, edge_specs, opts)
+    else:
+        result = layout_flat_py(specs, edge_specs)
 
     ox, oy = offset
     positioned_nodes: list[dict] = []

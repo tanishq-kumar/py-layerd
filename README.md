@@ -16,10 +16,11 @@ uv run maturin develop
 uv run python -c "from py_layerd.layout import layout; print(layout([{'id':'a','width':100,'height':40},{'id':'b','width':100,'height':40}], [{'id':'e1','source':'a','target':'b'}]))"
 ```
 
-## API (current)
+## API
 
 - `py_layerd._core.NodeSpec(id, width, height)` / `EdgeSpec(id, source, target)` / `layout_flat_py(nodes, edges) -> LayoutResult`
-- `py_layerd.layout.layout(nodes: list[dict], edges: list[dict], offset=(0,0)) -> {nodes, edges, width, height}` — high-level dict API with `offset` translation.
+- `py_layerd._core.PyLayoutOptions(direction, layering, node_placement, edge_routing, cycle_breaking, node_node, padding, ...)` / `layout_with_options_py(nodes, edges, options)`
+- `py_layerd.layout.layout(nodes: list[dict], edges: list[dict], offset=(0,0), direction="RIGHT", layering="network_simplex", node_placement="brandes_koepf", edge_routing="orthogonal", cycle_breaking="greedy", spacing_node_node=20, spacing_node_between_layers=20, padding=12, thoroughness=7, random_seed=1, options=None) -> {nodes, edges, width, height}` — high-level dict API with `offset` translation.
 
 ## Toolchain
 
@@ -29,7 +30,7 @@ uv run python -c "from py_layerd.layout import layout; print(layout([{'id':'a','
 ## Roadmap
 
 - Phase 1: scaffold + smoke — done (this repo).
-- Phase 2: `LayoutOptions` surface via PyO3 (`direction`, spacing, strategy).
+- Phase 2: `LayoutOptions` surface — done (direction / layering / node placement / edge routing / spacing / padding / seed).
 - Phase 3/4: React Flow (`measured`/`sourceHandle`→ports) + JSON Canvas (`group` hierarchy, side→ports) adapters.
 - Phase 5: incremental / warm-start.
 - Phase 8: 100k nodes / 200k edges ladder profiling.
