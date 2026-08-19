@@ -9,7 +9,7 @@ name = "py_layerd_core"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.24", features = ["extension-module"] }
+pyo3 = { version = "0.26", features = ["extension-module"] }
 layerd = { path = "vendor/layerd-core" }
 ffi-types = { path = "vendor/ffi-types" }
 hashbrown = "0.17"
