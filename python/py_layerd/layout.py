@@ -65,6 +65,8 @@ def layout(
     thoroughness: int = 7,
     random_seed: int = 1,
     options: PyLayoutOptions | None = None,
+    initial_positions: dict[str | int, tuple[float, float]] | None = None,
+    fixed_ids: frozenset[str | int] | set[str | int] | None = None,
 ) -> dict:
     """High-level layout: dict nodes/edges -> positioned nodes/edges with offset.
 
@@ -84,6 +86,11 @@ def layout(
                 node_placement = "simple"
             if edge_routing == "orthogonal":
                 edge_routing = "polyline"
+
+    pinned: dict[str, tuple[float, float]] = {}
+    if initial_positions:
+        pinned = {str(k): (float(v[0]), float(v[1])) for k, v in initial_positions.items()}
+    fixed: frozenset[str] = frozenset(str(x) for x in fixed_ids) if fixed_ids else frozenset()
 
     if not nodes:
         return {"nodes": [], "edges": [], "width": 0.0, "height": 0.0}
@@ -147,18 +154,30 @@ def layout(
         result = layout_flat_py(specs, edge_specs)
 
     ox, oy = offset
-    positioned_nodes: list[dict] = []
-    for nid, x, y, w, h in zip(
-        result.node_ids,
-        result.node_x,
-        result.node_y,
-        result.node_width,
-        result.node_height,
-        strict=True,
-    ):
-        positioned_nodes.append(
-            {"id": u32_to_str[nid], "x": x + ox, "y": y + oy, "width": w, "height": h}
+    # Map result by id for warm-start merge
+    pos_map = {
+        u32_to_str[nid]: (x, y, w, h)
+        for nid, x, y, w, h in zip(
+            result.node_ids,
+            result.node_x,
+            result.node_y,
+            result.node_width,
+            result.node_height,
+            strict=True,
         )
+    }
+    positioned_nodes: list[dict] = []
+    for nid_str, (x, y, w, h) in pos_map.items():
+        if nid_str in fixed and nid_str in pinned:
+            px, py = pinned[nid_str]
+            positioned_nodes.append({"id": nid_str, "x": px, "y": py, "width": w, "height": h})
+        else:
+            positioned_nodes.append(
+                {"id": nid_str, "x": x + ox, "y": y + oy, "width": w, "height": h}
+            )
+    # Preserve input order
+    order = {str(n["id"]): i for i, n in enumerate(nodes)}
+    positioned_nodes.sort(key=lambda d: order[d["id"]])
 
     positioned_edges: list[dict] = []
     for eid, src, tgt, start, length in zip(
