@@ -73,13 +73,26 @@ def layout(
     """High-level layout: dict nodes/edges -> positioned nodes/edges with offset.
 
     algorithm: "elk" (layered/Sugiyama, brandes_koepf + orthogonal) or "dagre"
-               (dagre-like: simple placement + polyline). Use options=PyLayoutOptions
-               to override any dagre preset (e.g. dagre + orthogonal).
+               (dagre-like: simple placement + polyline), "force" (Fruchterman-
+               Reingold), or "auto" (picks force for dense pouches, elk otherwise).
+               Use options=PyLayoutOptions to override any preset.
     """
+    # auto-pick: dense small graphs -> force, otherwise elk
+    effective_algo: str | None = algorithm.lower() if algorithm is not None else None
+    if effective_algo == "auto":
+        # density heuristic: few nodes but many edges -> force is 10-50x faster
+        n, m = len(nodes), len(edges)
+        density = (m / n) if n else 0
+        if (n <= 500 and density >= 8) or (n <= 2000 and density >= 10):
+            effective_algo = "force"
+        else:
+            effective_algo = "elk"
+        algorithm = effective_algo  # for downstream force dispatch
+
     if algorithm is not None:
         algo = algorithm.lower()
-        if algo not in ("elk", "dagre", "layered", "force"):
-            raise ValueError(f"unknown algorithm: {algorithm!r} (use elk/dagre)")
+        if algo not in ("elk", "dagre", "layered", "force", "auto"):
+            raise ValueError(f"unknown algorithm: {algorithm!r} (use elk/dagre/force/auto)")
         if algo == "force":
             # handled via dedicated path below (iters/area)
             pass

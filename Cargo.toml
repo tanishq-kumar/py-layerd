@@ -10,6 +10,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.24", features = ["extension-module"] }
-layerd = { path = "../layerd/core" }
-ffi-types = { path = "../layerd/ffi-types" }
+layerd = { path = "vendor/layerd-core" }
+ffi-types = { path = "vendor/ffi-types" }
 hashbrown = "0.17"

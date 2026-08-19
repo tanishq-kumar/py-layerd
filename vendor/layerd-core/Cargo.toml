@@ -1,0 +1,23 @@
+[package]
+name = "layerd"
+version = "0.1.0"
+edition = "2024"
+authors = ["nightwalk <zhiweiwang2001@gmail.com>"]
+description = "Blazing fast, low-memory layered graph layout in Rust"
+license = "MIT"
+repository = "https://github.com/Nightwalk2001/layerd"
+homepage = "https://github.com/Nightwalk2001/layerd"
+documentation = "https://docs.rs/layerd"
+readme = "../README.md"
+keywords = ["graph", "layout", "layered", "sugiyama", "visualization"]
+categories = ["algorithms", "visualization"]
+
+[features]
+default = []
+devtools = []
+
+[dependencies]
+smallvec = "2.0.0-alpha.12"
+bitflags = "2.11"
+hashbrown = "0.17"
+rand = "0.10"

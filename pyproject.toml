@@ -26,6 +26,7 @@ features = ["pyo3/extension-module"]
 python-source = "python"
 module-name = "py_layerd._core"
 manifest-path = "Cargo.toml"
+include = [{ path = "vendor", format = ["sdist", "wheel"] }]
 
 [tool.ruff]
 target-version = "py310"

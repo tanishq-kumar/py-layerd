@@ -1,0 +1,10 @@
+[package]
+name = "ffi-types"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+layerd = { path = "../layerd-core" }
+hashbrown = "0.17"
+web-time = "1"
