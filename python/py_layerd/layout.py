@@ -53,6 +53,7 @@ def layout(
     edges: list[dict],
     *,
     offset: tuple[float, float] = (0.0, 0.0),
+    algorithm: str | None = None,
     direction: str = "RIGHT",
     layering: str = "network_simplex",
     node_placement: str = "brandes_koepf",
@@ -65,7 +66,25 @@ def layout(
     random_seed: int = 1,
     options: PyLayoutOptions | None = None,
 ) -> dict:
-    """High-level layout: dict nodes/edges -> positioned nodes/edges with offset."""
+    """High-level layout: dict nodes/edges -> positioned nodes/edges with offset.
+
+    algorithm: "elk" (layered/Sugiyama, brandes_koepf + orthogonal) or "dagre"
+               (dagre-like: simple placement + polyline). Use options=PyLayoutOptions
+               to override any dagre preset (e.g. dagre + orthogonal).
+    """
+    if algorithm is not None:
+        algo = algorithm.lower()
+        if algo not in ("elk", "dagre", "layered"):
+            raise ValueError(f"unknown algorithm: {algorithm!r} (use elk/dagre)")
+        if algo == "dagre":
+            # dagre emulation: simple placement + polyline edges (no orthogonal bends)
+            if layering == "network_simplex":
+                layering = "network_simplex"
+            if node_placement == "brandes_koepf":
+                node_placement = "simple"
+            if edge_routing == "orthogonal":
+                edge_routing = "polyline"
+
     if not nodes:
         return {"nodes": [], "edges": [], "width": 0.0, "height": 0.0}
 
