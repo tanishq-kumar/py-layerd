@@ -1,0 +1,15 @@
+[package]
+name = "py-layerd-core"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+name = "py_layerd_core"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.24", features = ["extension-module"] }
+layerd = { path = "../layerd/core" }
+ffi-types = { path = "../layerd/ffi-types" }
+hashbrown = "0.17"

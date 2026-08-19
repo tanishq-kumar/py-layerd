@@ -1,0 +1,40 @@
+[project]
+name = "py-layerd"
+version = "0.1.0"
+description = "Python bindings for tanishq-kumar/layerd — fast layered layout with React Flow + JSON Canvas adapters"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "tanishq-kumar" }]
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "maturin>=1.14.1",
+    "pytest>=8",
+    "pytest-benchmark",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["maturin>=1.4,<2"]
+build-backend = "maturin"
+
+[tool.maturin]
+bindings = "pyo3"
+features = ["pyo3/extension-module"]
+python-source = "python"
+module-name = "py_layerd._core"
+manifest-path = "Cargo.toml"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "TCH", "N", "PIE", "RET"]
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["python"]
