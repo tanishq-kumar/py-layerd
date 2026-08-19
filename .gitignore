@@ -3,5 +3,6 @@ target/
 __pycache__/
 .pytest_cache/
 benchmark/results/
+!benchmark/bench_harness.py
 *.so
 examples/
