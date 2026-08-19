@@ -4,6 +4,7 @@ use layerd::options::LayoutOptions;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
+use crate::force::force_layout;
 use crate::options::PyLayoutOptions;
 use ffi_types::{FfiError, MAX_EDGE_COUNT, MAX_NODE_COUNT};
 
@@ -369,6 +370,44 @@ fn layout_with_options_py(
     layout_flat_py(nodes, edges)
 }
 
+
+#[pyfunction]
+#[pyo3(signature = (nodes, edges, iters=200, area=80000.0))]
+fn layout_force_py(nodes: Vec<NodeSpec>, edges: Vec<EdgeSpec>, iters: usize, area: f64) -> PyResult<LayoutResult> {
+    let (mut graph, node_ids, edge_ids, edge_sources, edge_targets, _) = build_graph(&nodes, &edges, None)?;
+    // init positions via chain default then force
+    force_layout(&mut graph, iters, area);
+    // encode size from bounds
+    let max_x = graph.nodes_iter().map(|(_, n)| n.position.x + n.size.x).fold(0.0, f64::max);
+    let max_y = graph.nodes_iter().map(|(_, n)| n.position.y + n.size.y).fold(0.0, f64::max);
+    graph.size = layerd::math::Vec2::new(max_x + 12.0, max_y + 12.0);
+    run_layout_and_collect_force(graph, node_ids, edge_ids, edge_sources, edge_targets)
+}
+
+fn run_layout_and_collect_force(
+    graph: LGraph,
+    node_ids: Vec<u32>,
+    edge_ids: Vec<u32>,
+    edge_sources: Vec<u32>,
+    edge_targets: Vec<u32>,
+) -> PyResult<LayoutResult> {
+    let node_arena: Vec<layerd::graph::index::NodeId> = graph.nodes_iter().map(|(id, _)| id).collect();
+    let edge_arena: Vec<layerd::graph::index::EdgeId> = graph.edges_iter().map(|(id, _)| id).collect();
+    if node_arena.is_empty() {
+        let n = edge_ids.len();
+        return Ok(LayoutResult { width: 0.0, height: 0.0, node_ids, node_x: vec![], node_y: vec![], node_width: vec![], node_height: vec![], edge_ids, edge_source: edge_sources, edge_target: edge_targets, edge_bend_start: vec![0; n], edge_bend_length: vec![0; n], bend_x: vec![], bend_y: vec![] });
+    }
+    let mut xs = Vec::with_capacity(node_arena.len());
+    let mut ys = Vec::with_capacity(node_arena.len());
+    let mut ws = Vec::with_capacity(node_arena.len());
+    let mut hs = Vec::with_capacity(node_arena.len());
+    for nid in &node_arena {
+        let n = graph.node(*nid);
+        xs.push(n.position.x); ys.push(n.position.y); ws.push(n.size.x); hs.push(n.size.y);
+    }
+    Ok(LayoutResult { width: graph.size.x, height: graph.size.y, node_ids, node_x: xs, node_y: ys, node_width: ws, node_height: hs, edge_ids, edge_source: edge_sources, edge_target: edge_targets, edge_bend_start: vec![0; edge_arena.len()], edge_bend_length: vec![0; edge_arena.len()], bend_x: vec![], bend_y: vec![] })
+}
+
 pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<NodeSpec>()?;
     m.add_class::<EdgeSpec>()?;
@@ -376,5 +415,6 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(layout_flat_py, m)?)?;
     m.add_function(wrap_pyfunction!(layout_bytes_py, m)?)?;
     m.add_function(wrap_pyfunction!(layout_with_options_py, m)?)?;
+    m.add_function(wrap_pyfunction!(layout_force_py, m)?)?;
     Ok(())
 }

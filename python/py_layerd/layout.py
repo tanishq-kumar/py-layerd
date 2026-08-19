@@ -65,6 +65,8 @@ def layout(
     thoroughness: int = 7,
     random_seed: int = 1,
     options: PyLayoutOptions | None = None,
+    force_iters: int = 200,
+    force_area: float = 80000.0,
     initial_positions: dict[str | int, tuple[float, float]] | None = None,
     fixed_ids: frozenset[str | int] | set[str | int] | None = None,
 ) -> dict:
@@ -76,9 +78,12 @@ def layout(
     """
     if algorithm is not None:
         algo = algorithm.lower()
-        if algo not in ("elk", "dagre", "layered"):
+        if algo not in ("elk", "dagre", "layered", "force"):
             raise ValueError(f"unknown algorithm: {algorithm!r} (use elk/dagre)")
-        if algo == "dagre":
+        if algo == "force":
+            # handled via dedicated path below (iters/area)
+            pass
+        elif algo == "dagre":
             # dagre emulation: simple placement + polyline edges (no orthogonal bends)
             if layering == "network_simplex":
                 layering = "network_simplex"
@@ -123,7 +128,10 @@ def layout(
         t = id_to_u32[e["target"]]
         edge_specs.append(EdgeSpec(u, s, t))
 
-    if options is not None:
+    if algorithm is not None and algorithm.lower() == "force":
+        from py_layerd._core import layout_force_py  # type: ignore
+        result: LayoutResult = layout_force_py(specs, edge_specs, force_iters, force_area)
+    elif options is not None:
         result: LayoutResult = layout_with_options_py(specs, edge_specs, options)
     elif (
         direction != "RIGHT"

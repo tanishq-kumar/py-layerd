@@ -1,6 +1,6 @@
 [project]
 name = "py-layerd"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python bindings for tanishq-kumar/layerd — fast layered layout with React Flow + JSON Canvas adapters"
 readme = "README.md"
 requires-python = ">=3.10"

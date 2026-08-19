@@ -15,6 +15,7 @@ def json_canvas(
     spacing_node_node: float = 20.0,
     spacing_node_between_layers: float = 20.0,
     padding: float = 12.0,
+    force_iters: int = 200,
     initial_positions: dict | None = None,
     fixed_ids: frozenset | set | None = None,
     preserve_positions: bool = False,
@@ -73,6 +74,7 @@ def json_canvas(
         spacing_node_node=spacing_node_node,
         spacing_node_between_layers=spacing_node_between_layers,
         padding=padding,
+        force_iters=force_iters,
         initial_positions=initial_positions,
         fixed_ids=fixed_ids,
     )
