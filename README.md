@@ -4,9 +4,9 @@ Python bindings for [tanishq-kumar/layerd](https://github.com/tanishq-kumar/laye
 
 - **Core:** Rust arena graph + typed `NodeId`/`EdgeId`/`PortId` + in-place passes (upstream `layerd/core`).
 - **Wire:** LRD1 binary format via `ffi-types` (`layout_flat` / `layout_bytes` with panic-safe `catch_unwind`).
-- **Python:** PyO3 + maturin, `uv` project, `ruff` + `ty`, `requires-python >=3.10`.
+- **Python:** PyO3 + maturin, `uv` project, `ruff`, `requires-python >=3.10`.
 
-> Fork Purpose (Rust): see [tanishq-kumar/layerd README](https://github.com/tanishq-kumar/layerd#fork-notice--tanishq-kumarlayerd) — offset-aware positioning, React Flow + JSON Canvas adapters, large-scale profiling (100k/200k+). This repo is the Python package for that fork.
+> Fork Purpose (Rust): see [tanishq-kumar/layerd](https://github.com/tanishq-kumar/layerd) — offset-aware positioning, React Flow + JSON Canvas adapters, large-scale profiling (100k/200k+). This repo is the Python package for that fork.
 
 ## Quickstart
 
@@ -23,15 +23,13 @@ uv run python -c "from py_layerd.layout import layout; print(layout([{'id':'a','
 
 ## Toolchain
 
-- `uv` (project + env), `ruff check` + `ruff format`, `ty` (Astral), `maturin develop`, `pytest`.
+- `uv` (project + env), `ruff check` + `ruff format`, `maturin develop`, `pytest`.
 - Rust: `cargo test -p layerd` on the fork; Python: `uv run pytest`.
 
-## Roadmap (from plan)
+## Roadmap
 
 - Phase 1: scaffold + smoke — done (this repo).
 - Phase 2: `LayoutOptions` surface via PyO3 (`direction`, spacing, strategy).
 - Phase 3/4: React Flow (`measured`/`sourceHandle`→ports) + JSON Canvas (`group` hierarchy, side→ports) adapters.
 - Phase 5: incremental / warm-start.
 - Phase 8: 100k nodes / 200k edges ladder profiling.
-
-See `~/.commandcode/plans/fast-layout-engine-plan.md` for the full plan.
